@@ -57,6 +57,13 @@ def render_roster(repo: Repository) -> None:
         st.query_params.clear()
 
     summaries = summarize_panel(repo)
+    st.markdown(
+        f'<div class="gs-panel-head">'
+        f'<span class="gs-legend">Care panel</span>'
+        f'<span class="gs-panel-head__note">Sorted for who needs a clinician first</span>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
     shown = _controls(summaries)
     if not shown:
         st.markdown(

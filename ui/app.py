@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,7 +29,7 @@ from ui.components.alerts import render_alerts
 from ui.components.channel import render_channel
 from ui.components.intake import render_intake
 from ui.components.roster import render_roster
-from ui.design import CSS, INK, STATUS_NOTE, STATUS_TONE
+from ui.design import CSS, INK, STATUS_NOTE, STATUS_TONE, STATUS_WASH
 
 st.set_page_config(
     page_title="GlycaSync — Care Team",
@@ -57,12 +58,23 @@ if settings.twilio_enabled:
     channel = "<b>WhatsApp</b> connected"
 else:
     channel = "<b>WhatsApp</b> not connected"
+
+_now = datetime.now()
+now = _now.strftime(f"%a {_now.day} %b · %H:%M")
 st.markdown(
     f"""
     <div class="gs-masthead">
-      <span class="gs-mark">GlycaSync</span>
+      <div class="gs-masthead__brand">
+        <span class="gs-mark">GlycaSync</span>
+        <span class="gs-masthead__tag">AI-powered Diabetes Management</span>
+      </div>
       <span class="gs-masthead__spacer"></span>
-      <span class="gs-channel">{channel}</span>
+      <div class="gs-masthead__meta">
+        <span class="gs-masthead__chip"><b>{len(summaries)}</b> on panel</span>
+        <span class="gs-masthead__chip"><b>{len(open_tickets)}</b> waiting</span>
+        <span class="gs-masthead__chip gs-masthead__chip--quiet">{now}</span>
+        <span class="gs-channel">{channel}</span>
+      </div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -98,7 +110,7 @@ round_cells = [
     (totals["in_range"], CONTROL_GOOD),
 ]
 cells = "".join(
-    f'<div class="gs-round__cell">'
+    f'<div class="gs-round__cell" style="--wash:{STATUS_WASH[status]}">'
     f'<div class="gs-round__n" style="color:{STATUS_TONE[status] if count else "#c4cad3"}">{count}</div>'
     f'<div class="gs-round__label">{status}</div>'
     f'<div class="gs-round__note">{STATUS_NOTE[status]}</div>'
@@ -106,13 +118,19 @@ cells = "".join(
     for count, status in round_cells
 )
 cells += (
-    f'<div class="gs-round__cell">'
+    f'<div class="gs-round__cell" style="--wash:#f2f4f7">'
     f'<div class="gs-round__n" style="color:{INK if open_tickets else "#c4cad3"}">{len(open_tickets)}</div>'
     f'<div class="gs-round__label">Waiting on me</div>'
     f'<div class="gs-round__note">Drafted replies to approve</div>'
     f"</div>"
 )
-st.markdown(f'<div class="gs-round">{cells}</div>', unsafe_allow_html=True)
+st.markdown(
+    f'<div class="gs-board">'
+    f'<div class="gs-board__head"><span class="gs-legend">This round</span>'
+    f'<span class="gs-board__hint">Glucose relative to each patient&rsquo;s corridor</span></div>'
+    f'<div class="gs-round">{cells}</div></div>',
+    unsafe_allow_html=True,
+)
 
 sections = ["Panel", f"Alerts · {len(open_tickets)}", "Intake", "WhatsApp"]
 section = st.radio(

@@ -123,7 +123,7 @@ html, body, .stApp, [class*="css"] {{
 .stApp {{ background: var(--paper); }}
 #MainMenu, footer, header, [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"],
 [data-testid="stToolbar"], [data-testid="stDecoration"] {{ display: none !important; }}
-.block-container {{ padding: 1.25rem 2rem 4rem; max-width: 1560px; }}
+.block-container {{ padding: 1.1rem 1.75rem 3.5rem; max-width: 1560px; }}
 
 h1, h2, h3, h4 {{ color: var(--ink); font-weight: 600; letter-spacing: -0.015em; }}
 
@@ -137,51 +137,81 @@ h1, h2, h3, h4 {{ color: var(--ink); font-weight: 600; letter-spacing: -0.015em;
 
 /* ---------- masthead ---------- */
 .gs-masthead {{
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  padding: 2px 2px 16px; border-bottom: 1px solid var(--line); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 16px 18px; margin: 0 0 16px;
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px;
+}}
+.gs-masthead__brand {{
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
 }}
 .gs-mark {{
   font-family: 'Instrument Serif', Georgia, serif !important;
-  font-size: 26px !important; font-weight: 400 !important; color: var(--ink) !important;
+  font-size: 30px !important; font-weight: 400 !important; color: var(--ink) !important;
   letter-spacing: -0.015em; line-height: 1 !important;
   display: inline-flex; align-items: center; gap: 10px;
 }}
 .gs-mark::before {{
-  content: ""; width: 3px; height: 22px; background: var(--ink); border-radius: 1px;
+  content: ""; width: 3px; height: 26px; background: var(--ink); border-radius: 1px;
   flex-shrink: 0;
 }}
+.gs-masthead__tag {{
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12.5px; font-weight: 400; color: var(--slate);
+  letter-spacing: 0.01em; line-height: 1.2; padding-left: 13px;
+}}
 .gs-masthead__spacer {{ flex: 1 1 auto; }}
+.gs-masthead__meta {{
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end;
+}}
+.gs-masthead__chip {{
+  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--graphite);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+  padding: 5px 10px; white-space: nowrap;
+}}
+.gs-masthead__chip b {{ color: var(--ink); font-weight: 600; }}
+.gs-masthead__chip--quiet {{ color: var(--muted); }}
 .gs-channel {{
   font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--slate);
-  border: 1px solid var(--line); border-radius: 3px; padding: 4px 9px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; background: var(--surface);
 }}
 .gs-channel b {{ color: var(--ink); font-weight: 500; }}
 
-/* ---------- the round strip ---------- */
+/* ---------- this-round board ---------- */
+.gs-board {{ margin-bottom: 16px; }}
+.gs-board__head {{
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin: 0 2px 8px;
+}}
+.gs-board__hint {{ font-size: 12px; color: var(--muted); }}
 .gs-round {{
   display: flex; gap: 0; flex-wrap: wrap;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
-  overflow: hidden; margin-bottom: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  overflow: hidden; box-shadow: 0 1px 0 rgba(16,21,31,0.03);
 }}
 .gs-round__cell {{
-  flex: 1 1 150px; padding: 13px 18px; border-right: 1px solid var(--hairline);
+  flex: 1 1 150px; padding: 16px 18px; border-right: 1px solid var(--hairline);
+  background:
+    linear-gradient(180deg, var(--wash, transparent) 0%, transparent 72%),
+    var(--surface);
+  position: relative;
 }}
 .gs-round__cell:last-child {{ border-right: none; }}
 .gs-round__n {{
-  font-family: 'IBM Plex Mono', monospace; font-size: 27px; font-weight: 500;
-  line-height: 1.05; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  font-family: 'IBM Plex Mono', monospace; font-size: 32px; font-weight: 500;
+  line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
 }}
 .gs-round__label {{
   font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 11px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink); margin-top: 4px;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink); margin-top: 8px;
 }}
-.gs-round__note {{ font-size: 11.5px; color: var(--muted); margin-top: 1px; }}
+.gs-round__note {{ font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.35; }}
 
 /* ---------- critical bar ---------- */
 .gs-critical {{
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   background: {BELOW_WASH}; border: 1px solid #edcdc3; border-left: 3px solid var(--below);
-  border-radius: 6px; padding: 12px 18px; margin-bottom: 14px;
+  border-radius: 8px; padding: 12px 18px; margin-bottom: 14px;
 }}
 .gs-critical__tag {{
   font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 11px; font-weight: 600;
@@ -194,17 +224,38 @@ a.gs-critical__who, a.gs-critical__who:visited {{
 }}
 a.gs-critical__who:hover {{ color: var(--below) !important; }}
 
-/* ---------- roster ---------- */
+/* ---------- panel toolbar + roster ---------- */
+.gs-panel-head {{
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin: 4px 2px 8px;
+}}
+.gs-panel-head__note {{ font-size: 12px; color: var(--muted); }}
+/* Fuse the filter row to the roster beneath it. */
+div[data-testid="stHorizontalBlock"]:has([data-testid="stTextInput"]) {{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 14px 6px;
+  margin-bottom: 0 !important;
+  gap: 0.6rem !important;
+}}
 .gs-roster {{
-  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 0 0 8px 8px;
+  overflow: hidden; box-shadow: 0 8px 24px rgba(16,21,31,0.04);
+  animation: gs-rise 320ms ease-out;
+}}
+@keyframes gs-rise {{
+  from {{ opacity: 0; transform: translateY(6px); }}
+  to {{ opacity: 1; transform: none; }}
 }}
 .gs-roster__head, .gs-row {{
   display: grid; align-items: center;
-  grid-template-columns: 3px minmax(200px, 1.5fr) 208px 116px 92px 104px 76px;
+  grid-template-columns: 4px minmax(200px, 1.5fr) 208px 116px 92px 104px 76px;
   gap: 18px; padding: 0 18px 0 0;
 }}
 .gs-roster__head {{
-  padding-top: 9px; padding-bottom: 9px; border-bottom: 1px solid var(--line);
+  padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
   background: #fbfcfd;
 }}
 .gs-roster__head span {{
@@ -227,21 +278,21 @@ a.gs-back, a.gs-back:hover, a.gs-back:visited {{
 .gs-row:hover {{ background: #fafbfc; }}
 .gs-row:focus-visible {{ outline: 2px solid var(--focus); outline-offset: -2px; }}
 .gs-row--on {{ background: #f4f6f8; }}
-.gs-row__flag {{ height: 100%; min-height: 62px; }}
-.gs-row__who {{ padding: 13px 0; min-width: 0; }}
+.gs-row__flag {{ height: 100%; min-height: 66px; }}
+.gs-row__who {{ padding: 14px 0; min-width: 0; }}
 .gs-row__name {{
   display: block; font-size: 15px; font-weight: 600; color: var(--ink);
   letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }}
 .gs-row__meta {{
-  display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px;
+  display: block; font-size: 11.5px; color: var(--muted); margin-top: 3px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }}
 .gs-row__meta .gs-mono {{ color: var(--slate); }}
 .gs-row__trace {{ display: block; line-height: 0; }}
 .gs-row__value {{ text-align: right; }}
 .gs-row__mg {{
-  font-family: 'IBM Plex Mono', monospace; font-size: 21px; font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500;
   letter-spacing: -0.02em; font-variant-numeric: tabular-nums; display: block; line-height: 1.1;
 }}
 .gs-row__unit {{ display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; }}
@@ -272,7 +323,7 @@ a.gs-back, a.gs-back:hover, a.gs-back:visited {{
 .gs-back, .gs-back:visited {{ color: var(--slate) !important; }}
 .gs-back:hover {{ color: var(--ink) !important; }}
 .gs-record {{
-  background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
   padding: 20px 22px; margin-bottom: 14px;
 }}
 .gs-record__top {{ display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }}
@@ -295,7 +346,7 @@ a.gs-back, a.gs-back:hover, a.gs-back:visited {{
 .gs-note {{ font-size: 12.5px; color: var(--muted); margin-top: 7px; font-style: italic; }}
 
 .gs-vitals {{ display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 14px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }}
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }}
 .gs-vitals__cell {{ flex: 1 1 130px; padding: 13px 18px; border-right: 1px solid var(--hairline); }}
 .gs-vitals__cell:last-child {{ border-right: none; }}
 .gs-vitals__v {{
@@ -358,15 +409,22 @@ a.gs-back, a.gs-back:hover, a.gs-back:visited {{
 /* ---------- section nav, built from a radio ---------- */
 [data-testid="stRadio"] > label {{ display: none; }}
 [data-testid="stRadio"] [role="radiogroup"] {{
-  gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 16px;
+  gap: 0; border-bottom: 1px solid var(--line); margin: 2px 0 14px;
+  background: transparent;
 }}
 [data-testid="stRadio"] [role="radiogroup"] > label {{
-  margin: 0; padding: 9px 18px 10px; cursor: pointer;
+  margin: 0; padding: 10px 16px 11px; cursor: pointer;
   border-bottom: 2px solid transparent; transition: color 120ms ease, border-color 120ms ease;
+  background: transparent !important;
 }}
 [data-testid="stRadio"] [role="radiogroup"] > label:hover {{ border-bottom-color: var(--line); }}
+/* Hide Streamlit's native radio glyphs so the tabs read as a section bar. */
+[data-testid="stRadio"] [role="radiogroup"] > label > div:first-child,
 [data-testid="stRadio"] [role="radiogroup"] > label > span:first-child,
-[data-testid="stRadio"] [role="radiogroup"] > label > div:first-child {{ display: none !important; }}
+[data-testid="stRadio"] [role="radiogroup"] label [data-testid="stWidgetLabel"],
+[data-testid="stRadio"] input[type="radio"] {{
+  display: none !important; width: 0 !important; height: 0 !important; opacity: 0 !important;
+}}
 [data-testid="stRadio"] [role="radiogroup"] > label p {{
   font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 12.5px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin: 0;
@@ -411,13 +469,14 @@ hr {{ border-color: var(--line); margin: 1.1rem 0; }}
 [data-testid="stCaptionContainer"] p {{ font-size: 12px; color: var(--muted); }}
 
 @media (max-width: 1180px) {{
-  .gs-roster__head, .gs-row {{ grid-template-columns: 3px minmax(160px, 1.4fr) 116px 92px 76px; }}
+  .gs-roster__head, .gs-row {{ grid-template-columns: 4px minmax(160px, 1.4fr) 116px 92px 76px; }}
   .gs-roster__head span:nth-child(3), .gs-row__trace,
   .gs-roster__head span:nth-child(6), .gs-row__corridor {{ display: none; }}
 }}
 @media (max-width: 760px) {{
   .block-container {{ padding: 1rem 1rem 3rem; }}
-  .gs-roster__head, .gs-row {{ grid-template-columns: 3px 1fr 96px; }}
+  .gs-masthead {{ padding: 14px; }}
+  .gs-roster__head, .gs-row {{ grid-template-columns: 4px 1fr 96px; }}
   .gs-roster__head span:nth-child(5), .gs-row__when,
   .gs-roster__head span:nth-child(7), .gs-row__alerts {{ display: none; }}
 }}

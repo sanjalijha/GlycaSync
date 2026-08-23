@@ -37,6 +37,9 @@ def test_panel_renders_without_exception(panel):
 def test_masthead_and_safety_note(panel):
     body = html(panel)
     assert "GlycaSync" in body
+    assert "AI-powered Diabetes Management" in body
+    assert "This round" in body
+    assert "Care panel" in body
     assert "Diabetes Clinic" not in body
     assert "does not diagnose" in body
     assert "approved by a clinician" in body
