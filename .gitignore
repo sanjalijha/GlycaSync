@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+data/*.db
+data/*.db-journal
+.streamlit/secrets.toml
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Vendored clone of anthropics/skills; it carries its own .git
+skills/
