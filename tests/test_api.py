@@ -6,7 +6,17 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture(scope="module")
 def client(tmp_path_factory):
+    keys = (
+        "DATABASE_PATH",
+        "TWILIO_ACCOUNT_SID",
+        "TWILIO_AUTH_TOKEN",
+        "TWILIO_VALIDATE_SIGNATURE",
+    )
+    previous = {key: os.environ.get(key) for key in keys}
     os.environ["DATABASE_PATH"] = str(tmp_path_factory.mktemp("api") / "api.db")
+    os.environ["TWILIO_ACCOUNT_SID"] = ""
+    os.environ["TWILIO_AUTH_TOKEN"] = ""
+    os.environ["TWILIO_VALIDATE_SIGNATURE"] = "false"
     from app.config import get_settings
     from app.db.database import get_repo
 
@@ -16,6 +26,11 @@ def client(tmp_path_factory):
 
     with TestClient(app) as test_client:
         yield test_client
+    for key, value in previous.items():
+        if value is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = value
     get_settings.cache_clear()
     get_repo.cache_clear()
 
@@ -92,7 +107,9 @@ def test_twilio_webhook_buffers_message(client):
         data={"From": "whatsapp:+919811000001", "Body": "sugar 150", "MessageSid": "SM123"},
     )
     assert response.status_code == 200
-    assert response.json()["status"] == "buffered"
+    assert "<Response>" in response.text
+    inbox = client.get("/api/patients/P-1001/messages").json()
+    assert any(m["direction"] == "IN" and "sugar 150" in m["content"] for m in inbox)
 
 
 def test_webhook_returns_twiml_when_requested(client):

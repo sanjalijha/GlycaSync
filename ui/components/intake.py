@@ -22,7 +22,7 @@ EXAMPLES = {
 
 
 def render_intake(repo: Repository) -> None:
-    log_tab, review_tab, sent_tab = st.tabs(["Log a reading", "Record review", "Sent messages"])
+    log_tab, review_tab, sent_tab = st.tabs(["Log a reading", "Record review", "Message log"])
     with log_tab:
         _log(repo)
     with review_tab:
@@ -172,7 +172,10 @@ def _review(repo: Repository) -> None:
                 unsafe_allow_html=True,
             )
             return
-        st.success(f"Drafted {len(created)} reminder{'s' if len(created) > 1 else ''} for approval.")
+        st.success(
+            f"Drafted {len(created)} outreach message{'s' if len(created) > 1 else ''} "
+            "for approval — each one names the gap on that chart."
+        )
         rows = []
         for ticket in created:
             patient = repo.get_patient(ticket.patient_id)
@@ -188,18 +191,15 @@ def _review(repo: Repository) -> None:
 def _sent(repo: Repository) -> None:
     settings = get_settings()
     if settings.twilio_enabled:
-        st.caption("WhatsApp is connected. Everything below was delivered.")
+        st.caption("Everything Twilio delivered or received is here, newest first.")
     else:
-        st.caption(
-            "WhatsApp is not connected, so approved replies are recorded here instead of being "
-            "delivered. Add Twilio credentials to .env to start sending."
-        )
+        st.caption("Local log of inbound and outbound messages. Connect WhatsApp to send live.")
 
-    messages = repo.recent_messages(limit=25, direction="OUT")
+    messages = repo.recent_messages(limit=40)
     if not messages:
         st.markdown(
-            '<div class="gs-empty"><b>Nothing sent yet</b>'
-            "Approved replies from the alert queue will show up here.</div>",
+            '<div class="gs-empty"><b>No messages yet</b>'
+            "Inbound WhatsApp and approved replies will show up here.</div>",
             unsafe_allow_html=True,
         )
         return
@@ -208,8 +208,12 @@ def _sent(repo: Repository) -> None:
         patient = repo.get_patient(msg["patient_id"]) if msg["patient_id"] else None
         name = patient.full_name if patient else msg["phone_number"] or "Unknown number"
         stamp = (msg["created_at"] or "")[:16].replace("T", " ")
+        inbound = msg["direction"] == "IN"
+        who = name if inbound else "Care team"
+        css = "gs-in" if inbound else "gs-out"
+        label = "Received" if inbound else "Sent"
         blocks.append(
-            f'<div class="gs-stamp">{name} · {msg["phone_number"]} · {stamp}</div>'
-            f'<div class="gs-out">{msg["content"]}</div>'
+            f'<div class="gs-stamp">{label} · {who} · {msg["phone_number"]} · {stamp}</div>'
+            f'<div class="{css}">{msg["content"]}</div>'
         )
     st.markdown("".join(blocks), unsafe_allow_html=True)

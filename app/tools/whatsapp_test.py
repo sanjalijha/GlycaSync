@@ -29,11 +29,22 @@ def describe_config() -> tuple[bool, list[str]]:
     if not settings.twilio_whatsapp_from:
         missing.append("TWILIO_WHATSAPP_FROM")
 
-    print("WhatsApp delivery configuration")
+    local_webhook = settings.webhook_url.startswith("http://localhost")
+
+    print("WhatsApp connection")
     print(f"  Twilio credentials : {'present' if not missing else 'missing ' + ', '.join(missing)}")
     print(f"  Sender             : {settings.twilio_whatsapp_from or '—'}")
-    print(f"  Inbound webhook    : {settings.public_base_url}/webhook/whatsapp")
-    print(f"  Delivery enabled   : {settings.twilio_enabled}")
+    print(f"  Inbound webhook    : {settings.webhook_url}")
+    print(f"  Signature check    : {'on' if settings.twilio_validate_signature else 'OFF'}")
+    print(f"  Outbound enabled   : {settings.twilio_enabled}")
+
+    if local_webhook:
+        print()
+        print("  The webhook URL is local, so Twilio cannot reach it. Expose it with")
+        print("  `ngrok http 8000` and set PUBLIC_BASE_URL to the HTTPS address ngrok")
+        print("  prints, then paste that same URL into the Twilio sandbox settings.")
+        print("  The signature is verified against this URL, so the two must match.")
+
     return settings.twilio_enabled, missing
 
 

@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+import os
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+ENV_PATH = ROOT_DIR / ".env"
+ENV_EXAMPLE = ROOT_DIR / ".env.example"
 
 
 class Settings(BaseSettings):
@@ -30,6 +35,11 @@ class Settings(BaseSettings):
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_whatsapp_from: str = "whatsapp:+14155238886"
+    # Approved WhatsApp template, used when a freeform body is not allowed.
+    twilio_content_sid: str = ""
+    # The webhook writes to patient charts and can trigger an automatic emergency
+    # reply, so unsigned requests are refused unless this is deliberately turned off.
+    twilio_validate_signature: bool = True
 
     clinic_name: str = "GlycaSync Diabetes Clinic"
     clinic_city: str = "Mumbai"
@@ -66,7 +76,51 @@ class Settings(BaseSettings):
     def twilio_enabled(self) -> bool:
         return bool(self.twilio_account_sid and self.twilio_auth_token)
 
+    @property
+    def webhook_url(self) -> str:
+        return f"{self.public_base_url.rstrip('/')}/webhook/whatsapp"
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def reload_settings() -> Settings:
+    get_settings.cache_clear()
+    return get_settings()
+
+
+def upsert_env_keys(updates: dict[str, str], *, path: Path | None = None) -> Path:
+    """Write keys into `.env` without dropping comments or unrelated values."""
+    dest = path or ENV_PATH
+    if not dest.exists() and ENV_EXAMPLE.exists():
+        dest.write_text(ENV_EXAMPLE.read_text(encoding="utf-8"), encoding="utf-8")
+
+    lines = dest.read_text(encoding="utf-8").splitlines() if dest.exists() else []
+    seen: set[str] = set()
+    rewritten: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "=" in stripped:
+            key = stripped.split("=", 1)[0].strip()
+            if key in updates:
+                rewritten.append(f"{key}={updates[key]}")
+                seen.add(key)
+                continue
+        rewritten.append(line)
+    missing = [key for key in updates if key not in seen]
+    if missing:
+        if rewritten and rewritten[-1] != "":
+            rewritten.append("")
+        rewritten.extend(f"{key}={updates[key]}" for key in missing)
+    dest.write_text("\n".join(rewritten) + "\n", encoding="utf-8")
+    return dest
+
+
+def apply_settings_updates(updates: dict[str, str], *, path: Path | None = None) -> Settings:
+    """Persist values to `.env` and to this process, then reload settings."""
+    upsert_env_keys(updates, path=path)
+    for key, value in updates.items():
+        os.environ[key] = value
+    return reload_settings()

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from typing import Optional
-
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -15,10 +16,16 @@ from app.config import get_settings
 from app.db.database import get_repo
 from app.db.seed_data import ensure_seeded
 from app.integrations.debounce import DebounceBuffer, IngressPart
-from app.integrations.twilio_wa import WhatsAppGateway, parse_twilio_inbound
+from app.integrations.twilio_wa import (
+    WhatsAppGateway,
+    fetch_inbound_media,
+    log_inbound,
+    parse_twilio_inbound,
+    validate_twilio_signature,
+)
 from app.models.triage import ActionStatus
 
-settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -50,11 +57,12 @@ async def _process_composite(payload) -> dict:
     )
 
 
-debounce = DebounceBuffer(window_seconds=settings.debounce_seconds, on_flush=_process_composite)
+debounce = DebounceBuffer(window_seconds=get_settings().debounce_seconds, on_flush=_process_composite)
 
 
 @app.get("/health")
 def health() -> dict:
+    settings = get_settings()
     repo = get_repo()
     return {
         "status": "ok",
@@ -64,6 +72,8 @@ def health() -> dict:
         "llm": settings.llm_enabled,
         "sarvam": settings.sarvam_enabled,
         "twilio": settings.twilio_enabled,
+        "webhook_url": settings.webhook_url,
+        "signature_check": settings.twilio_validate_signature and settings.twilio_enabled,
         "debounce_pending": debounce.pending_count(),
     }
 
@@ -88,7 +98,7 @@ async def simulate_ingress(body: SimulateIngress) -> dict:
                 audio_url=body.audio_url,
             )
         )
-        return {"queued": True, "window_seconds": settings.debounce_seconds}
+        return {"queued": True, "window_seconds": get_settings().debounce_seconds}
     result = run_ingress_graph(
         phone_number=body.phone_number,
         patient_id=body.patient_id,
@@ -99,10 +109,44 @@ async def simulate_ingress(body: SimulateIngress) -> dict:
     return result
 
 
+EMPTY_TWIML = "<?xml version='1.0' encoding='UTF-8'?><Response></Response>"
+
+
 @app.post("/webhook/whatsapp")
-async def twilio_webhook(request: Request) -> dict:
+async def twilio_webhook(request: Request) -> Response:
+    """Receive a WhatsApp message from Twilio.
+
+    Answers with empty TwiML: the reply is drafted, triaged and usually reviewed by a
+    clinician before it goes out, so nothing is said in the webhook response itself.
+    """
     form = dict(await request.form())
+
+    settings = get_settings()
+    if settings.twilio_validate_signature and settings.twilio_enabled:
+        signature = request.headers.get("X-Twilio-Signature", "")
+        if not validate_twilio_signature(signature, str(request.url), form):
+            logger.warning("Rejected an unsigned or missigned request to the WhatsApp webhook.")
+            raise HTTPException(403, "Invalid Twilio signature")
+
     inbound = parse_twilio_inbound(form)
+    if not inbound["phone_number"]:
+        logger.warning("WhatsApp webhook received a payload with no sender; ignoring.")
+        return Response(EMPTY_TWIML, media_type="text/xml")
+
+    # Log the receive immediately — before debounce, and whether or not the
+    # number is on a chart — so the thread shows what Twilio delivered.
+    log_inbound(inbound)
+
+    if not get_repo().get_patient_by_phone(inbound["phone_number"]):
+        logger.warning(
+            "WhatsApp message from unregistered number %s; not adding to any chart.",
+            inbound["phone_number"],
+        )
+        return Response(EMPTY_TWIML, media_type="text/xml")
+
+    if inbound["image_url"] or inbound["audio_url"]:
+        inbound = await run_in_threadpool(fetch_inbound_media, inbound)
+
     await debounce.add(
         IngressPart(
             phone_number=inbound["phone_number"],
@@ -111,7 +155,7 @@ async def twilio_webhook(request: Request) -> dict:
             audio_url=inbound["audio_url"],
         )
     )
-    return {"status": "buffered", "window_seconds": settings.debounce_seconds}
+    return Response(EMPTY_TWIML, media_type="text/xml")
 
 
 @app.get("/api/patients")

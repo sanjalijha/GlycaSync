@@ -37,6 +37,7 @@ def test_panel_renders_without_exception(panel):
 def test_masthead_and_safety_note(panel):
     body = html(panel)
     assert "GlycaSync" in body
+    assert "Diabetes Clinic" not in body
     assert "does not diagnose" in body
     assert "approved by a clinician" in body
 
@@ -110,3 +111,13 @@ def test_intake_renders():
     app = open_console("Intake")
     assert not app.exception
     assert len(app.tabs) >= 3
+
+
+def test_whatsapp_section_renders():
+    app = open_console("WhatsApp")
+    assert not app.exception
+    body = html(app)
+    assert "Not connected" in body or "Connected" in body
+    assert "Account SID" not in body
+    assert "Auth token" not in body
+    assert "TWILIO_" not in body

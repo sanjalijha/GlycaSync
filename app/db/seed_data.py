@@ -477,12 +477,13 @@ def _seed_inbox(repo: Repository) -> None:
             extracted_data=outreach_obs,
             triage_reason="HbA1c last recorded 110 days ago (8.4%). ADA/RSSDI cadence is ~90 days.",
             drafted_response=(
-                "Rajesh ji, your HbA1c test is now overdue. We can arrange a home sample collection "
-                "tomorrow morning between 7–9 am. Reply YES to confirm the slot."
+                "Rajesh ji, your last HbA1c was 8.4%, recorded 110 days ago. "
+                "This test shows three-month control and is due every 90 days. "
+                "Get it at your usual lab this week and WhatsApp a photo of the report."
             ),
             drafted_response_localized=(
-                "राजेश जी, आपकी HbA1c जाँच overdue हो गई है। कल सुबह 7–9 बजे घर से सैंपल "
-                "ले सकते हैं। स्लॉट कन्फर्म करने के लिए YES लिखें।"
+                "राजेश जी, पिछली HbA1c 8.4% थी, 110 दिन पहले। यह जाँच हर 90 दिन पर चाहिए। "
+                "इस हफ्ते अपनी लैब से करवाएँ और रिपोर्ट की फोटो WhatsApp करें।"
             ),
             status=ActionStatus.PENDING,
             ticket_type=TicketType.OUTREACH,
@@ -504,9 +505,9 @@ def _seed_inbox(repo: Repository) -> None:
             extracted_data=drop_obs,
             triage_reason="No glucose logs for 6 days. Patient is insulin-dependent (drop-off threshold: 4 days).",
             drafted_response=(
-                "Abdul Rahman ji, we have not received your sugar readings for 6 days. "
-                "A quick fasting photo tomorrow morning helps us keep your insulin plan safe. "
-                "Need help using the glucometer? Reply HELP."
+                "Abdul Rahman ji, we have had no sugar readings for 6 days. "
+                "You are on insulin, so a silent meter means we cannot see a low coming. "
+                "Send today's fasting number now — type it or photograph the meter."
             ),
             drafted_response_localized=(
                 "అబ్దుల్ రహ్మాన్ గారు, 6 రోజులుగా షుగర్ రీడింగ్స్ రాలేదు. రేపు ఉదయం "

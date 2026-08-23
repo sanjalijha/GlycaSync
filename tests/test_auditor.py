@@ -23,6 +23,9 @@ def test_flags_overdue_hba1c(repo):
     )
     created = audit_emr(repo)
     assert any("HbA1c" in t.triage_reason for t in created)
+    hba1c = next(t for t in created if "HbA1c" in t.triage_reason)
+    assert "report" in hba1c.drafted_response.lower()
+    assert "yes" not in hba1c.drafted_response.lower()
 
 
 def test_recent_hba1c_not_flagged(repo):

@@ -269,6 +269,27 @@ class Repository:
                 return self._row_to_patient(row)
         return None
 
+    def set_patient_phone(self, patient_id: str, phone_number: str) -> PatientProfile:
+        """Point a chart at a live WhatsApp number.
+
+        The last 10 digits must be unique across the panel — inbound messages
+        resolve by subscriber number, so two charts must never share one.
+        """
+        from app.integrations.twilio_wa import normalize_e164
+
+        patient = self.get_patient(patient_id)
+        if not patient:
+            raise ValueError(f"No patient {patient_id}")
+        number = normalize_e164(phone_number)
+        if len("".join(ch for ch in number if ch.isdigit())) < SUBSCRIBER_DIGITS:
+            raise ValueError("Need a full mobile number, including country code.")
+        owner = self.get_patient_by_phone(number)
+        if owner and owner.patient_id != patient_id:
+            raise ValueError(f"{number} is already on {owner.full_name}'s chart.")
+        updated = patient.model_copy(update={"phone_number": number})
+        self.upsert_patient(updated)
+        return updated
+
     def update_patient_last_log(self, patient_id: str, ts: Optional[datetime] = None) -> None:
         stamp = _iso(ts or utcnow())
         with self.connect() as conn:
@@ -530,7 +551,7 @@ class Repository:
         with self.connect() as conn:
             conn.execute(
                 """
-                INSERT INTO messages (
+                INSERT OR IGNORE INTO messages (
                     message_id, patient_id, phone_number, direction, content,
                     language, media_url, ticket_id, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)

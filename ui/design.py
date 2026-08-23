@@ -136,21 +136,23 @@ h1, h2, h3, h4 {{ color: var(--ink); font-weight: 600; letter-spacing: -0.015em;
 
 /* ---------- masthead ---------- */
 .gs-masthead {{
-  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
-  padding: 0 2px 14px; border-bottom: 1px solid var(--line); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 8px 2px 22px; border-bottom: 1px solid var(--line); margin-bottom: 22px;
 }}
 .gs-mark {{
-  font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em;
-  display: inline-flex; align-items: center; gap: 9px;
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: 44px !important; font-weight: 700 !important; color: var(--ink) !important;
+  letter-spacing: -0.04em; line-height: 1 !important;
+  display: inline-flex; align-items: center; gap: 14px;
 }}
 .gs-mark::before {{
-  content: ""; width: 3px; height: 17px; background: var(--ink); border-radius: 1px;
+  content: ""; width: 5px; height: 40px; background: var(--ink); border-radius: 2px;
+  flex-shrink: 0;
 }}
-.gs-masthead__clinic {{ font-size: 13px; color: var(--slate); }}
 .gs-masthead__spacer {{ flex: 1 1 auto; }}
 .gs-channel {{
-  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--slate);
-  border: 1px solid var(--line); border-radius: 3px; padding: 3px 9px; background: var(--surface);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--slate);
+  border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; background: var(--surface);
 }}
 .gs-channel b {{ color: var(--ink); font-weight: 500; }}
 

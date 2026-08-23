@@ -67,8 +67,8 @@ def render_alerts(repo: Repository) -> None:
     if routine:
         left, right = st.columns([4, 1])
         left.caption(
-            f"{len(routine)} reminder{'s' if len(routine) > 1 else ''} from the record review "
-            "are drafted and ready."
+            f"{len(routine)} record-review draft{'s' if len(routine) > 1 else ''} "
+            "ready to send — each one is written for that patient's gap."
         )
         if right.button(f"Send all {len(routine)}", type="primary", use_container_width=True):
             for ticket in routine:

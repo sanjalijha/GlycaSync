@@ -25,6 +25,7 @@ from app.db.seed_data import ensure_seeded
 from app.models.triage import ActionStatus, PriorityLevel
 from app.simulator.mock_ingress import ensure_static_assets
 from ui.components.alerts import render_alerts
+from ui.components.channel import render_channel
 from ui.components.intake import render_intake
 from ui.components.roster import render_roster
 from ui.design import CSS, INK, STATUS_NOTE, STATUS_TONE
@@ -49,16 +50,17 @@ open_tickets = [
 ]
 critical = [t for t in open_tickets if t.priority == PriorityLevel.P0_CRITICAL]
 
-channel = (
-    "<b>WhatsApp</b> connected"
-    if settings.twilio_enabled
-    else "<b>WhatsApp</b> not connected — replies are recorded, not sent"
-)
+if settings.twilio_enabled:
+    from app.integrations.webhook_server import ensure_webhook_running
+
+    ensure_webhook_running()
+    channel = "<b>WhatsApp</b> connected"
+else:
+    channel = "<b>WhatsApp</b> not connected"
 st.markdown(
     f"""
     <div class="gs-masthead">
       <span class="gs-mark">GlycaSync</span>
-      <span class="gs-masthead__clinic">{settings.clinic_name}, {settings.clinic_city}</span>
       <span class="gs-masthead__spacer"></span>
       <span class="gs-channel">{channel}</span>
     </div>
@@ -112,7 +114,7 @@ cells += (
 )
 st.markdown(f'<div class="gs-round">{cells}</div>', unsafe_allow_html=True)
 
-sections = ["Panel", f"Alerts · {len(open_tickets)}", "Intake"]
+sections = ["Panel", f"Alerts · {len(open_tickets)}", "Intake", "WhatsApp"]
 section = st.radio(
     "Section",
     sections,
@@ -125,8 +127,10 @@ if section is None or section.startswith("Panel"):
     render_roster(repo)
 elif section.startswith("Alerts"):
     render_alerts(repo)
-else:
+elif section.startswith("Intake"):
     render_intake(repo)
+else:
+    render_channel(repo)
 
 st.markdown(
     '<div class="gs-legend" style="margin-top:34px;padding-top:14px;'
