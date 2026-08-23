@@ -95,9 +95,10 @@ def language_name(code: str) -> str:
 
 # IBM Plex: drawn for technical instrumentation, and its Devanagari, Tamil and
 # Telugu siblings let patient-language previews speak in the same voice.
+# Instrument Serif: wordmark only — a quieter counterpoint to the instrument UI.
 CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&family=IBM+Plex+Sans+Devanagari:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&family=IBM+Plex+Sans+Devanagari:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
 
 :root {{
   --ink: {INK};
@@ -136,23 +137,23 @@ h1, h2, h3, h4 {{ color: var(--ink); font-weight: 600; letter-spacing: -0.015em;
 
 /* ---------- masthead ---------- */
 .gs-masthead {{
-  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-  padding: 8px 2px 22px; border-bottom: 1px solid var(--line); margin-bottom: 22px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 2px 2px 16px; border-bottom: 1px solid var(--line); margin-bottom: 18px;
 }}
 .gs-mark {{
-  font-family: 'IBM Plex Sans', sans-serif !important;
-  font-size: 44px !important; font-weight: 700 !important; color: var(--ink) !important;
-  letter-spacing: -0.04em; line-height: 1 !important;
-  display: inline-flex; align-items: center; gap: 14px;
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-size: 26px !important; font-weight: 400 !important; color: var(--ink) !important;
+  letter-spacing: -0.015em; line-height: 1 !important;
+  display: inline-flex; align-items: center; gap: 10px;
 }}
 .gs-mark::before {{
-  content: ""; width: 5px; height: 40px; background: var(--ink); border-radius: 2px;
+  content: ""; width: 3px; height: 22px; background: var(--ink); border-radius: 1px;
   flex-shrink: 0;
 }}
 .gs-masthead__spacer {{ flex: 1 1 auto; }}
 .gs-channel {{
-  font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--slate);
-  border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; background: var(--surface);
+  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--slate);
+  border: 1px solid var(--line); border-radius: 3px; padding: 4px 9px; background: var(--surface);
 }}
 .gs-channel b {{ color: var(--ink); font-weight: 500; }}
 

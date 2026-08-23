@@ -3,7 +3,9 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -23,6 +25,14 @@ class Settings(BaseSettings):
     database_path: str = "data/glycasync.db"
     debounce_seconds: int = 45
     public_base_url: str = "http://localhost:8000"
+
+    @model_validator(mode="before")
+    @classmethod
+    def empty_env_as_missing(cls, data: Any) -> Any:
+        """Vercel often sets env keys to ''; treat those as unset so defaults apply."""
+        if isinstance(data, dict):
+            return {key: value for key, value in data.items() if value != ""}
+        return data
 
     llm_api_key: str = ""
     llm_base_url: str = "https://api.openai.com/v1"
