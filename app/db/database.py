@@ -128,7 +128,18 @@ class Repository:
         settings = get_settings()
         self.db_path = Path(db_path) if db_path else settings.db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._init_schema()
+        try:
+            self._init_schema()
+        except sqlite3.OperationalError:
+            # Absolute DATABASE_PATH on a read-only mount still fails — last resort.
+            from app.config import _tmp_data_dir
+
+            fallback = _tmp_data_dir() / self.db_path.name
+            if fallback == self.db_path:
+                raise
+            self.db_path = fallback
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+            self._init_schema()
 
     def connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path, check_same_thread=False)

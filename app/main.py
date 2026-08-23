@@ -69,6 +69,7 @@ def health() -> dict:
         "app": settings.app_name,
         "clinic": settings.clinic_name,
         "patients": repo.patient_count(),
+        "database": str(repo.db_path),
         "llm": settings.llm_enabled,
         "sarvam": settings.sarvam_enabled,
         "twilio": settings.twilio_enabled,

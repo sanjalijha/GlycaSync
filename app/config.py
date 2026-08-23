@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -15,7 +16,44 @@ ENV_EXAMPLE = ROOT_DIR / ".env.example"
 
 def _on_serverless() -> bool:
     """Vercel/Lambda ship a read-only bundle; only /tmp is writable."""
-    return bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+    if os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"):
+        return True
+    if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        return True
+    # Python on Vercel unpacks under /var/task even when VERCEL is unset.
+    return str(ROOT_DIR).startswith("/var/task")
+
+
+def _tmp_data_dir() -> Path:
+    return Path(tempfile.gettempdir()) / "glycasync"
+
+
+def _dir_is_writable(directory: Path) -> bool:
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        probe = directory / ".write_probe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False
+
+
+def resolve_db_path(configured: str) -> Path:
+    """Resolve SQLite path; never use the read-only deploy bundle on serverless."""
+    name = Path(configured).name or "glycasync.db"
+    if _on_serverless():
+        path = _tmp_data_dir() / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    path = Path(configured)
+    if not path.is_absolute():
+        path = ROOT_DIR / path
+    if not _dir_is_writable(path.parent):
+        path = _tmp_data_dir() / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 class Settings(BaseSettings):
@@ -61,16 +99,7 @@ class Settings(BaseSettings):
 
     @property
     def db_path(self) -> Path:
-        path = Path(self.database_path)
-        if not path.is_absolute():
-            # Relative paths resolve under the deploy bundle, which is read-only on
-            # Vercel — SQLite cannot create glycasync.db there.
-            if _on_serverless():
-                path = Path("/tmp") / "glycasync" / path.name
-            else:
-                path = ROOT_DIR / path
-        path.parent.mkdir(parents=True, exist_ok=True)
-        return path
+        return resolve_db_path(self.database_path)
 
     @property
     def static_dir(self) -> Path:
@@ -81,9 +110,11 @@ class Settings(BaseSettings):
     @property
     def media_dir(self) -> Path:
         if _on_serverless():
-            path = Path("/tmp") / "glycasync" / "media"
+            path = _tmp_data_dir() / "media"
         else:
             path = ROOT_DIR / "data" / "media"
+            if not _dir_is_writable(path):
+                path = _tmp_data_dir() / "media"
         path.mkdir(parents=True, exist_ok=True)
         return path
 
