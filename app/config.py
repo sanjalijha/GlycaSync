@@ -13,6 +13,11 @@ ENV_PATH = ROOT_DIR / ".env"
 ENV_EXAMPLE = ROOT_DIR / ".env.example"
 
 
+def _on_serverless() -> bool:
+    """Vercel/Lambda ship a read-only bundle; only /tmp is writable."""
+    return bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=str(ROOT_DIR / ".env"),
@@ -58,7 +63,12 @@ class Settings(BaseSettings):
     def db_path(self) -> Path:
         path = Path(self.database_path)
         if not path.is_absolute():
-            path = ROOT_DIR / path
+            # Relative paths resolve under the deploy bundle, which is read-only on
+            # Vercel — SQLite cannot create glycasync.db there.
+            if _on_serverless():
+                path = Path("/tmp") / "glycasync" / path.name
+            else:
+                path = ROOT_DIR / path
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -70,7 +80,10 @@ class Settings(BaseSettings):
 
     @property
     def media_dir(self) -> Path:
-        path = ROOT_DIR / "data" / "media"
+        if _on_serverless():
+            path = Path("/tmp") / "glycasync" / "media"
+        else:
+            path = ROOT_DIR / "data" / "media"
         path.mkdir(parents=True, exist_ok=True)
         return path
 
