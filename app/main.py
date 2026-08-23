@@ -60,6 +60,18 @@ async def _process_composite(payload) -> dict:
 debounce = DebounceBuffer(window_seconds=get_settings().debounce_seconds, on_flush=_process_composite)
 
 
+@app.get("/")
+def root() -> dict:
+    settings = get_settings()
+    return {
+        "app": settings.app_name,
+        "status": "ok",
+        "docs": "/docs",
+        "health": "/health",
+        "webhook": "/webhook/whatsapp",
+    }
+
+
 @app.get("/health")
 def health() -> dict:
     settings = get_settings()
