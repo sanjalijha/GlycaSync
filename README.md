@@ -26,11 +26,16 @@ python -m app.db.seed_data    # loads a demo panel of 10 patients
 streamlit run ui/app.py
 ```
 
-The API and WhatsApp webhook run separately:
+The WhatsApp webhook (and, locally, the REST API) run separately:
 
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
+
+**Vercel** deploys only the Twilio webhook (`POST /webhook/whatsapp`) plus `/` and
+`/health`. The care-team console is Streamlit — host that on Streamlit Community
+Cloud (or run it locally). Portal REST routes under `/api/...` are mounted only
+when `VERCEL` is unset, so local uvicorn and tests still get the full API.
 
 ## Tests
 
